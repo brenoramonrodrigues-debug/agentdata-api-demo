@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: agentdata-api-demo
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: MODE
+        value: demo
