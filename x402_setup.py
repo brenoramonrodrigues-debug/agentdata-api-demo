@@ -11,7 +11,9 @@ def configure_x402(app):
     from x402.http.types import RouteConfig
     from x402.server import x402ResourceServer
     from x402.mechanisms.evm.exact import ExactEvmServerScheme
-    facilitator=os.getenv("X402_FACILITATOR_URL","https://x402.org/facilitator")
+    facilitator=os.getenv("X402_FACILITATOR_URL","")
+    if not facilitator.startswith("https://"):
+        raise RuntimeError("Set X402_FACILITATOR_URL to a verified HTTPS Base Sepolia facilitator")
     server=x402ResourceServer(HTTPFacilitatorClient(FacilitatorConfig(url=facilitator)))
     server.register("eip155:84532",ExactEvmServerScheme())
     routes={"GET /premium/sample":RouteConfig(accepts=[PaymentOption(scheme="exact",price="$0.005",network="eip155:84532",pay_to=address)])}
