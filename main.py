@@ -4,7 +4,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="AgentData API", version="0.1.0", description="Demo gratuita de validação e conversão de dados brasileiros")
+app = FastAPI(title="AgentData API", version="0.2.0", description="Demo gratuita de validação e conversão de dados brasileiros")
+from x402_setup import configure_x402
+X402_ACTIVE = configure_x402(app)
 class ValueInput(BaseModel):
     value: str = Field(max_length=256)
 class CsvInput(BaseModel):
@@ -29,8 +31,14 @@ def check_cnpj(value):
 def demo(): return FileResponse(Path(__file__).with_name("demo.html"))
 @app.get("/health")
 def health(): return {"status":"ok","mode":os.getenv("MODE","demo")}
+@app.get("/agent.json")
+def agent_manifest():
+    return {"name":"AgentData API","description":"Brazilian identifier format validation and CSV conversion","openapi":"/openapi.json","documentation":"/docs","capabilities":["cpf_check_digit_validation","cnpj_check_digit_validation","br_phone_normalization","csv_to_json"],"payments":{"mode":"testnet_only" if X402_ACTIVE else "disabled","premium_sample":"/premium/sample","network":"eip155:84532" if X402_ACTIVE else None}}
+@app.get("/premium/sample")
+def premium_sample():
+    return {"message":"x402 testnet integration sample","network":"eip155:84532","real_money":False}
 @app.get("/catalog")
-def catalog(): return {"name":"AgentData API","payment_status":"demo_only","price_target_usd_per_call":"0.005","endpoints":["POST /validate/cpf","POST /validate/cnpj","POST /normalize/phone","POST /convert/csv-json"]}
+def catalog(): return {"name":"AgentData API","payment_status":"testnet_only" if X402_ACTIVE else "disabled","price_target_usd_per_call":"0.005","endpoints":["POST /validate/cpf","POST /validate/cnpj","POST /normalize/phone","POST /convert/csv-json"]}
 @app.post("/validate/cpf")
 def cpf(data:ValueInput): return {"valid":check_cpf(data.value),"type":"CPF","digits":digits(data.value)}
 @app.post("/validate/cnpj")
