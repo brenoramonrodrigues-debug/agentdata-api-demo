@@ -1,0 +1,7 @@
+{
+  "name": "AgentData API",
+  "description": "Demo-only Brazilian data validation and CSV-to-JSON API",
+  "openapi": "/openapi.json",
+  "payment_status": "demo_only",
+  "price_target_usd_per_call": "0.005"
+}
